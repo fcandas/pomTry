@@ -1,15 +1,12 @@
-<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+<suite name="POM Test Suite" parallel="tests" thread-count="2">
 
-<suite name="TestSuite">
-
-    <test name="LoginTest">
-
+    <test name="Login Tests">
         <classes>
-
             <class name="tests.LoginTest"/>
-
         </classes>
-
     </test>
+
+
 
 </suite>
