@@ -33,7 +33,7 @@ public class LoginTest extends BaseTest {
     @Test(dataProvider = "loginData")
     public void loginTest(String username, String password){
 
-        LoginPage loginPage = new LoginPage(getDriver());
+        LoginPage loginPage = new LoginPage();
 
         loginPage.enterUsername(username);
         loginPage.enterPassword(password);

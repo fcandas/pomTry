@@ -1,5 +1,6 @@
 package pages;
 
+import base.BaseTest;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
@@ -7,8 +8,8 @@ public class LoginPage {
 
     WebDriver driver;
 
-    public LoginPage(WebDriver driver){
-        this.driver = driver;
+    public LoginPage(){
+        this.driver = BaseTest.getDriver();
     }
 
     By username = By.id("user-name");
@@ -26,5 +27,4 @@ public class LoginPage {
     public void clickLogin(){
         driver.findElement(loginButton).click();
     }
-
 }
