@@ -6,13 +6,13 @@ import org.testng.annotations.Test;
 import pages.LoginPage;
 import utils.ExcelUtils;
 
-public class LoginTest extends BaseTest {
+public class LoginTest2 extends BaseTest {
 
     @DataProvider(name = "loginData")
     public Object[][] loginData() {
 
         String path = "src/test/resources/testData/LoginData.xlsx";
-        String sheetName = "Sheet1";
+        String sheetName = "Sheet2";
 
         ExcelUtils.setExcelFile(path, sheetName);
 

@@ -2,7 +2,6 @@ package base;
 
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
-import com.aventstack.extentreports.Status;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.testng.ITestResult;
@@ -16,15 +15,21 @@ import io.github.bonigarcia.wdm.WebDriverManager;
 
 public class BaseTest {
 
-    public WebDriver driver;
-    public ExtentReports extent;
-    public ExtentTest test;
+    private static ThreadLocal<WebDriver> driver = new ThreadLocal<>();
+    private static ThreadLocal<ExtentTest> test = new ThreadLocal<>();
+
+    public static WebDriver getDriver(){
+        return driver.get();
+    }
+
+    public static ExtentTest getTest(){
+        return test.get();
+    }
+
+    public static ExtentReports extent = ExtentManager.getInstance();
 
     @BeforeMethod
-    public void setup() {
-
-        extent = ExtentManager.getInstance();
-        test = extent.createTest("Test");
+    public void setup(java.lang.reflect.Method method) {
 
         String browser = ConfigReader.getProperty("browser");
         String url = ConfigReader.getProperty("url");
@@ -33,33 +38,51 @@ public class BaseTest {
 
         if(browser.equalsIgnoreCase("chrome")){
             WebDriverManager.chromedriver().setup();
-            driver = new ChromeDriver();
+            WebDriver webDriver = new ChromeDriver();
+            driver.set(webDriver);
         }
 
-        driver.manage().window().maximize();
-        driver.get(url);
+        getDriver().manage().window().maximize();
+        getDriver().get(url);
 
         LoggerUtil.log.info("Navigated to URL: " + url);
+
+        // Extent Test Thread Safe
+        ExtentTest extentTest = extent.createTest(method.getName());
+        test.set(extentTest);
     }
 
     @AfterMethod
     public void tearDown(ITestResult result) {
 
         if(result.getStatus() == ITestResult.FAILURE){
+
             LoggerUtil.log.error("Test Failed: " + result.getName());
-            String screenshotPath = ScreenShotUtil.captureScreenshot(driver, result.getName());
-            test.fail("Test Failed").addScreenCaptureFromPath(screenshotPath);
-        } else if(result.getStatus() == ITestResult.SUCCESS){
+
+            String screenshotPath = ScreenShotUtil.captureScreenshot(getDriver(), result.getName());
+
+            getTest().fail("Test Failed").addScreenCaptureFromPath(screenshotPath);
+
+        }
+        else if(result.getStatus() == ITestResult.SUCCESS){
+
             LoggerUtil.log.info("Test Passed: " + result.getName());
-            test.pass("Test Passed");
-        } else if(result.getStatus() == ITestResult.SKIP){
+
+            getTest().pass("Test Passed");
+
+        }
+        else if(result.getStatus() == ITestResult.SKIP){
+
             LoggerUtil.log.warn("Test Skipped: " + result.getName());
-            test.skip("Test Skipped");
+
+            getTest().skip("Test Skipped");
         }
 
-        if(driver != null){
-            driver.quit();
+        if(getDriver() != null){
+            getDriver().quit();
+            driver.remove();
         }
+
         extent.flush();
     }
 }
