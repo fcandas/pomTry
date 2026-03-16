@@ -1,0 +1,35 @@
+name: Selenium Regression Pipeline
+
+on:
+  push:
+    branches: [ main ]
+
+  schedule:
+    - cron: '0 7 * * *'   # Her gün 10:00 TR
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: maven-cache-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
+
+      - name: Build Project
+        run: mvn clean install
+
+      - name: Run Selenium Tests
+        run: mvn test
