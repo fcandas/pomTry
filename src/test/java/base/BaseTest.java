@@ -4,6 +4,7 @@ import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.testng.ITestResult;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -37,11 +38,25 @@ public class BaseTest {
         LoggerUtil.log.info("Launching browser: " + browser);
 
         if(browser.equalsIgnoreCase("chrome")){
+            // 1. Chrome seçeneklerini oluştur
+            ChromeOptions options = new ChromeOptions();
+
+            // 2. CI (GitHub Actions) ortamında mıyız kontrol et
+            if (System.getenv("GITHUB_ACTIONS") != null) {
+                options.addArguments("--headless=new"); // Ekranı kapat
+                options.addArguments("--no-sandbox"); // Linux güvenliği için
+                options.addArguments("--disable-dev-shm-usage"); // Bellek yönetimi için
+                options.addArguments("--window-size=1920,1080"); // Sanal ekran boyutu
+            }
+
             WebDriverManager.chromedriver().setup();
-            WebDriver webDriver = new ChromeDriver();
+            // 3. Driver'ı seçeneklerle (options) başlat
+            WebDriver webDriver = new ChromeDriver(options);
             driver.set(webDriver);
         }
 
+        // Headless modda maximize bazen hata verebilir,
+        // ama yukarıda window-size verdiğimiz için sorun olmaz.
         getDriver().manage().window().maximize();
         getDriver().get(url);
 
@@ -51,6 +66,7 @@ public class BaseTest {
         ExtentTest extentTest = extent.createTest(method.getName());
         test.set(extentTest);
     }
+
 
     @AfterMethod
     public void tearDown(ITestResult result) {
