@@ -5,13 +5,10 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
-  # --- Cron Job Buradan Başlıyor ---
+  # Her sabah TR saatiyle 10:00'da çalışır (UTC 07:00)
   schedule:
-    # Her sabah Türkiye saatiyle 10:00 (UTC 07:00)
-    # Dakika Saat Gün Ay Haftanın_Günü
     - cron: '0 7 * * *'
-  # ---------------------------------
-  # Manuel çalıştırmak istersen bu satırı eklemek hayat kurtarır:
+  # Manuel çalıştırma butonu ekler
   workflow_dispatch:
 
 jobs:
@@ -19,7 +16,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
       - name: Set up JDK 25
         uses: actions/setup-java@v4
@@ -28,5 +26,15 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build with Maven
+      - name: Build and Test with Maven
+        # -B: Batch mode (daha temiz loglar)
+        # -DshowSuccess=false: Sadece hataları görmek için (isteğe bağlı)
         run: mvn -B package --file pom.xml
+
+      - name: Upload Test Reports
+        # if: always() sayesinde testler fail olsa bile raporları GitHub'a yükler
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-reports
+          path: target/surefire-reports/
